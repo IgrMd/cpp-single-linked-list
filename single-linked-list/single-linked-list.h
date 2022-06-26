@@ -1,4 +1,4 @@
-//Sprint 6. SingleLinkedList v0.1.0.
+//Sprint 6. SingleLinkedList v0.1.1.
 #pragma once
 
 #include <algorithm>
@@ -84,6 +84,7 @@ class SingleLinkedList {
 		// Возвращает ссылку на самого себя
 		// Инкремент итератора, не указывающего на существующий элемент списка, приводит к неопределённому поведению
 		BasicIterator& operator++() noexcept {
+			assert(this->node_ != nullptr);
 			node_ = node_->next_node ? node_->next_node : nullptr;
 			return *this;
 		}
@@ -98,18 +99,22 @@ class SingleLinkedList {
 		}
 		BasicIterator& operator+=(size_t count) noexcept {
 			for (size_t i = 0; i < count; ++i) {
+				//Тут assert не нужен. При выходе за границу теперь словим assert в методе BasicIterator& operator++()
+				//assert(this->node_ != nullptr);
 				++(*this);
 			}
 			return *this;
 		}
 
 		BasicIterator& operator+(size_t count) noexcept {
-			return *this+=count;
+			auto it(*this);
+			return it+=count;
 		}
 		// Операция разыменования. Возвращает ссылку на текущий элемент
 		// Вызов этого оператора у итератора, не указывающего на существующий элемент списка,
 		// приводит к неопределённому поведению
 		[[nodiscard]] reference operator*() const noexcept {
+			assert(this->node_ != nullptr);
 			ValueType& result = node_->value;
 			return result;
 		}
@@ -117,6 +122,7 @@ class SingleLinkedList {
 		// Вызов этого оператора у итератора, не указывающего на существующий элемент списка,
 		// приводит к неопределённому поведению
 		[[nodiscard]] pointer operator->() const noexcept {
+			assert(this->node_ != nullptr);
 			ValueType& result = node_->value;
 			return &result;
 		}
@@ -142,15 +148,12 @@ public:
 	SingleLinkedList(const SingleLinkedList& other)
 		: head_(), size_(0) {
 		SingleLinkedList<Type> tmp;
-		for(auto it = other.begin(); it != other.end(); ++it) {
-			tmp.PushFront(*it);
+		auto pos_it = tmp.before_begin();
+		for(auto value_it = other.begin(); value_it != other.end(); ++value_it) {
+			tmp.InsertAfter(pos_it,*value_it);
+			++pos_it;
 		}
-		SingleLinkedList<Type> tmp_to_swap;
-		while (tmp.head_.next_node) {
-			tmp_to_swap.PushFront(*tmp.begin());
-			tmp.PopFront();
-		}
-		swap(tmp_to_swap);
+		swap(tmp);
 	}
 
 	SingleLinkedList(std::initializer_list<Type> values)
@@ -163,7 +166,6 @@ public:
 	}
 
 	SingleLinkedList& operator=(const SingleLinkedList& rhs) {
-		// Реализуйте присваивание самостоятельно
 		if (this->begin() == rhs.begin()) {
 			return *this;
 		}
@@ -184,7 +186,6 @@ public:
 	//Удаляет элемент, следующий за pos.
 	// Возвращает итератор на элемент, следующий за удалённым
 	Iterator EraseAfter(ConstIterator pos) noexcept {
-		// Заглушка. Реализуйте метод самостоятельно
 		if(pos == end() || !pos.node_->next_node) {
 			return Iterator(nullptr);
 		}
@@ -271,7 +272,6 @@ public:
 	// Возвращает итератор, указывающий на позицию перед первым элементом односвязного списка.
 	// Разыменовывать этот итератор нельзя - попытка разыменования приведёт к неопределённому поведению
 	[[nodiscard]] Iterator before_begin() noexcept {
-		// Реализуйте самостоятельно
 		return BasicIterator<Type>(&head_);
 	}
 	// Возвращает константный итератор, указывающий на позицию перед первым элементом односвязного списка.
